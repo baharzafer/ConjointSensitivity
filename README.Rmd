@@ -50,7 +50,7 @@ This example demonstrates how to use ConjointSensitivity using the replication d
 
 ```{r example}
 library(ConjointSensitivity)
-library(dplyr, verbose = F)
+library(dplyr, verbose = F, quietly = T)
 library(torch)
 library(purrr)
 

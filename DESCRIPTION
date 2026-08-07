@@ -2,9 +2,8 @@ Package: ConjointSensitivity
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+    person("Bahar", "Zafer", , "bzafer@ur.rochester.edu", role = c("aut", "cre"))
+Description: Evaluates the robustness of conjoint analysis results to the removal of small fractions of respondents and experimentally generated unique contests.
 Encoding: UTF-8
 Imports: 
     dplyr,
