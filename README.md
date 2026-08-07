@@ -54,15 +54,7 @@ Coppock (2018).
 
 ``` r
 library(ConjointSensitivity)
-library(dplyr, verbose = F, quietly = T)
-#> 
-#> Attaching package: 'dplyr'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     filter, lag
-#> The following objects are masked from 'package:base':
-#> 
-#>     intersect, setdiff, setequal, union
+library(dplyr, quietly = T, warn.conflicts = FALSE)
 library(torch)
 library(purrr)
 
