@@ -1,5 +1,5 @@
 Package: ConjointSensitivity
-Title: What the Package Does (One Line, Title Case)
+Title: Sensitivity Analysis for Conjoint Analysis Results
 Version: 0.0.0.9000
 Authors@R: 
     person("Bahar", "Zafer", , "bzafer@ur.rochester.edu", role = c("aut", "cre"))
