@@ -1,0 +1,110 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# ConjointSensitivity
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+This package is developed to ...
+
+## Installation
+
+You can install the development version of ConjointSensitivity like so:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("zfrb/ConjointSensitivity")
+
+```
+
+## Quickstart
+
+This example demonstrates how to use ConjointSensitivity using the replication data for the non-partisan YouGov experiment in Kirkland and Coppock (2018).
+
+```{r example}
+library(ConjointSensitivity)
+library(dplyr, quietly = T)
+library(torch)
+library(purrr)
+
+# Load the conjoint dataset
+df <- read.csv("tests/testthat/testdata_KirklandCoppock_nonpartisan_yougov.csv")
+
+```
+
+### 1. Respondent Sensitivity 
+
+```{r}
+# Fit the base linear model
+fit.lm <- lm(
+  as.formula(win ~ cand_female + Age + Race + Job + Political), 
+  data = df, 
+  weights = weight, 
+  x = TRUE, 
+  y = TRUE
+)
+
+# Run the respondent-level analysis
+respondent_results <- AnalyzeRespondentSensitivity(
+  fit.lm = fit.lm, 
+  segroup = df$caseid, 
+  var_interest = "cand_female", 
+  target = "sign", 
+  dropped_resp_list = TRUE
+)
+
+# View main results 
+respondent_results$RespondentSensitivity
+
+# View dropped respondents  
+respondent_results$DroppedRespondents
+```
+
+#### Visualising the Respondent Influences CDF
+```{r plot}
+plot_cdf_respondent_influences(
+  fit.lm = fit.lm,
+  segroup = df$caseid,
+  var_interest = "cand_female",
+  ndrop = 14
+)
+```
+
+### 2.Contest Sensitivity 
+
+
+```{r}
+contest_results <- AnalyzeContestSensitivity(
+  formula = as.formula(win ~ cand_female + Age + Race + Job + Political), 
+  data = as.data.frame(df), 
+  respondent_id = "caseid", 
+  contest_no = "contest_no", 
+  var_interest = "cand_female", 
+  target = "sign", 
+  weights = "weight"
+)
+
+# View main results
+contest_results$ContestSensitivity
+
+# View dropped contests 
+contest_results$DroppedContests
+
+# View the mapping from profile attributes to contest ids.
+head(contest_results$ProfileKey)
+```
+
+
