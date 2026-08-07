@@ -7,7 +7,35 @@
 
 <!-- badges: end -->
 
-This package is developed to …
+This package is developed to evaluate the robustness of conjoint
+analysis results to the removal of small fractions of respondents and
+experimentally generated unique contests.
+
+Our package is built on `zaminfluence` to calculate influence scores and
+detect the most influential respondents and contests in conjoint
+designs.
+
+We provide a simple example to demonstrate how to use
+`ConjointSensitivity` using the replication data for the non-partisan
+YouGov experiment in Kirkland and Coppock (2018).
+
+## References
+
+- **zaminfluence Package & Methodology:** Broderick, T., Giordano, R., &
+  Meager, R. (2020). *An Automatic Finite-Sample Robustness Metric: When
+  Can Dropping a Little Data Make a Big Difference?*
+
+- **Kirkland and Coppock (2018) Data:** Kirkland, P. A., & Coppock, A.
+  (2018). *Candidate choice without party labels: new insights from
+  conjoint survey experiments*. Political Behavior, 40, 571–591.
+
+## Citation
+
+If you use `ConjointSensitivity` in your research, please cite our
+paper:
+
+Abramson, S., & Zafer, B. (2026) *Do Voters Prefer Women and Young
+Candidates? Re-evaluating Evidence from Conjoint Experiments*
 
 ## Installation
 
@@ -26,7 +54,7 @@ Coppock (2018).
 
 ``` r
 library(ConjointSensitivity)
-library(dplyr, quietly = T)
+library(dplyr, verbose = F)
 #> 
 #> Attaching package: 'dplyr'
 #> The following objects are masked from 'package:stats':
@@ -80,16 +108,7 @@ respondent_results$DroppedRespondents
 #### Visualising the Respondent Influences CDF
 
 ``` r
-plot_cdf_respondent_influences(
-  fit.lm = fit.lm,
-  segroup = df$caseid,
-<<<<<<< HEAD
-  var_interest = "cand_female",
-  ndrop = 14
-=======
-  var_interest = "cand_female"
->>>>>>> temp-update
-)
+plot_cdf_respondent_influences(fit.lm = fit.lm, segroup = df$caseid, var_interest = "cand_female", ndrop = 14)
 ```
 
 <img src="man/figures/README-plot-1.png" width="100%" />

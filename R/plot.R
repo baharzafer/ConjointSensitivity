@@ -56,7 +56,8 @@ plot_cdf_respondent_influences = function(fit.lm, segroup, var_interest, target 
   y_lim = seq(from=0, to=1, by=0.2)
 
   # Base Plot
-  plot(x, y, xlab=x_lab, ylab=y_lab, axes=F, main = main)
+  plot(x, y, xlab=x_lab, ylab=y_lab, axes=F, main = main,
+       xlim=1.2*c(min(x), max(x)))
 
   # Color dropped respondents if the number is provided
   if(!is.null(ndrop)){
