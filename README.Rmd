@@ -63,6 +63,7 @@ df <- read.csv("tests/testthat/testdata_KirklandCoppock_nonpartisan_yougov.csv")
 
 ```{r}
 # Fit the base linear model
+df$Age = as.character(df$Age)  # factor() is not allowed in formula
 fit.lm <- lm(
   as.formula(win ~ cand_female + Age + Race + Job + Political), 
   data = df, 
