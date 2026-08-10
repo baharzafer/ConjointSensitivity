@@ -20,14 +20,22 @@ knitr::opts_chunk$set(
 
 This package is developed to evaluate the robustness of conjoint analysis results to the removal of small fractions of respondents and experimentally generated unique contests.
 
-Our package is built on ```zaminfluence``` to calculate influence scores and detect the most influential respondents and contests in conjoint designs. 
+For any given Average Marginal Component Effect (AMCE) estimated with your conjoint experiment data, you can use our package to 
+
+*   detect the smallest proportion of respondents (or contests) that derives its sign or significance,
+
+*   retrieve the set of those respondents (or contests) to further investigate their characteristics,
+
+*   visualize the influences of respondents (or contests) to detect outliers. 
+
+Our package is built on ```zaminfluence``` introduced by (Broderick, T., Giordano, R., & Meager, R., 2020) to calculate influence scores for respondents and contests. 
 
 We provide a simple example to demonstrate how to use ```ConjointSensitivity``` using the replication data for the non-partisan YouGov experiment in Kirkland and Coppock (2018).
 
 ## References
-*   **zaminfluence Package & Methodology:** Broderick, T., Giordano, R., & Meager, R. (2020). _An Automatic Finite-Sample Robustness Metric: When Can Dropping a Little Data Make a Big Difference?_
+*   Broderick, T., Giordano, R., & Meager, R. (2020). _An Automatic Finite-Sample Robustness Metric: When Can Dropping a Little Data Make a Big Difference?_
 
-*   **Kirkland and Coppock (2018) Data:** Kirkland, P. A., & Coppock, A. (2018). _Candidate choice without party labels: new insights from conjoint survey experiments_. Political Behavior, 40, 571–591.
+*   Kirkland, P. A., & Coppock, A. (2018). _Candidate choice without party labels: new insights from conjoint survey experiments_. Political Behavior, 40, 571–591.
 
 ## Citation 
 If you use ```ConjointSensitivity``` in your research, please cite our paper:
@@ -36,7 +44,8 @@ Abramson, S., & Zafer, B. (2026) _Do Voters Prefer Women and Young Candidates? R
 
 ## Installation
 
-You can install the development version of ConjointSensitivity like so:
+You can install the development version of ConjointSensitivity:
+(Please let us know if you encounter any error.)
 
 ``` r
 # install.packages("devtools")
@@ -56,14 +65,15 @@ library(purrr)
 
 # Load the conjoint dataset
 df <- read.csv("tests/testthat/testdata_KirklandCoppock_nonpartisan_yougov.csv")
-
+df$cand_female = ifelse(df$Gender=="Female", 1, 0) # make sure the variable of interest is numeric
+## Conjoint data should be in the long-form. 
 ```
 
 ### 1. Respondent Sensitivity 
 
 ```{r}
 # Fit the base linear model
-df$Age = as.character(df$Age)  # factor() is not allowed in formula
+df$Age = as.character(df$Age)  # factor() is not allowed in formula when using AnalyzeRespondentSensitivity and AnalyzeContestSensitivity
 fit.lm <- lm(
   as.formula(win ~ cand_female + Age + Race + Job + Political), 
   data = df, 
@@ -75,45 +85,54 @@ fit.lm <- lm(
 # Run the respondent-level analysis
 respondent_results <- AnalyzeRespondentSensitivity(
   fit.lm = fit.lm, 
-  segroup = df$caseid, 
-  var_interest = "cand_female", 
-  target = "sign", 
-  dropped_resp_list = TRUE
+  segroup = df$caseid,           # survey respondent id 
+  var_interest = "cand_female",  # target AMCE
+  target = "sign",               # or "significance"
+  dropped_resp_list = TRUE       # if TRUE, function returns the set of respondent ids removed to reverse the target metric of the variable of interest. 
 )
 
 # View main results 
-respondent_results$RespondentSensitivity
+t(respondent_results$RespondentSensitivity)
 
 # View dropped respondents  
 respondent_results$DroppedRespondents
+
+print(paste0("Proportion of respondents removed to reverse the sign of cand_female:", respondent_results$RespondentSensitivity$n_drop/respondent_results$RespondentSensitivity$n_respondent*100))
 ```
 
 #### Visualising the Respondent Influences CDF
+
 ```{r plot}
-plot_cdf_respondent_influences(fit.lm = fit.lm, segroup = df$caseid, var_interest = "cand_female", ndrop = 14)
+# Respondents removed to reverse the sign of the AMCE of "cand_female" are drawn in red.
+# Median respondent is shown in green.
+plot_cdf_respondent_influences(fit.lm = fit.lm, 
+                               segroup = df$caseid, 
+                               var_interest = "cand_female", 
+                               target = "sign", 
+                               ndrop = 14)
 ```
 
 ### 2.Contest Sensitivity 
-
 
 ```{r}
 contest_results <- AnalyzeContestSensitivity(
   formula = as.formula(win ~ cand_female + Age + Race + Job + Political), 
   data = as.data.frame(df), 
   respondent_id = "caseid", 
-  contest_no = "contest_no", 
+  contest_no = "contest_no",  
   var_interest = "cand_female", 
   target = "sign", 
   weights = "weight"
 )
 
 # View main results
-contest_results$ContestSensitivity
+t(contest_results$ContestSensitivity)
 
 # View dropped contests 
 contest_results$DroppedContests
 
 # View the mapping from profile attributes to contest ids.
+# Note that contests are unordered pairs of profiles. 
 head(contest_results$ProfileKey)
 ```
 

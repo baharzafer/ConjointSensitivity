@@ -11,9 +11,21 @@ This package is developed to evaluate the robustness of conjoint
 analysis results to the removal of small fractions of respondents and
 experimentally generated unique contests.
 
-Our package is built on `zaminfluence` to calculate influence scores and
-detect the most influential respondents and contests in conjoint
-designs.
+For any given Average Marginal Component Effect (AMCE) estimated with
+your conjoint experiment data, you can use our package to
+
+- detect the smallest proportion of respondents (or contests) that
+  derives its sign or significance,
+
+- retrieve the set of those respondents (or contests) to further
+  investigate their characteristics,
+
+- visualize the influences of respondents (or contests) to detect
+  outliers.
+
+Our package is built on `zaminfluence` introduced by (Broderick, T.,
+Giordano, R., & Meager, R., 2020) to calculate influence scores for
+respondents and contests.
 
 We provide a simple example to demonstrate how to use
 `ConjointSensitivity` using the replication data for the non-partisan
@@ -21,13 +33,13 @@ YouGov experiment in Kirkland and Coppock (2018).
 
 ## References
 
-- **zaminfluence Package & Methodology:** Broderick, T., Giordano, R., &
-  Meager, R. (2020). *An Automatic Finite-Sample Robustness Metric: When
-  Can Dropping a Little Data Make a Big Difference?*
+- Broderick, T., Giordano, R., & Meager, R. (2020). *An Automatic
+  Finite-Sample Robustness Metric: When Can Dropping a Little Data Make
+  a Big Difference?*
 
-- **Kirkland and Coppock (2018) Data:** Kirkland, P. A., & Coppock, A.
-  (2018). *Candidate choice without party labels: new insights from
-  conjoint survey experiments*. Political Behavior, 40, 571–591.
+- Kirkland, P. A., & Coppock, A. (2018). *Candidate choice without party
+  labels: new insights from conjoint survey experiments*. Political
+  Behavior, 40, 571–591.
 
 ## Citation
 
@@ -39,7 +51,8 @@ Candidates? Re-evaluating Evidence from Conjoint Experiments*
 
 ## Installation
 
-You can install the development version of ConjointSensitivity like so:
+You can install the development version of ConjointSensitivity: (Please
+let us know if you encounter any error.)
 
 ``` r
 # install.packages("devtools")
@@ -60,13 +73,15 @@ library(purrr)
 
 # Load the conjoint dataset
 df <- read.csv("tests/testthat/testdata_KirklandCoppock_nonpartisan_yougov.csv")
+df$cand_female = ifelse(df$Gender=="Female", 1, 0) # make sure the variable of interest is numeric
+## Conjoint data should be in the long-form. 
 ```
 
 ### 1. Respondent Sensitivity
 
 ``` r
 # Fit the base linear model
-df$Age = as.character(df$Age)  # factor() is not allowed in formula
+df$Age = as.character(df$Age)  # factor() is not allowed in formula when using AnalyzeRespondentSensitivity and AnalyzeContestSensitivity
 fit.lm <- lm(
   as.formula(win ~ cand_female + Age + Race + Job + Political), 
   data = df, 
@@ -78,30 +93,50 @@ fit.lm <- lm(
 # Run the respondent-level analysis
 respondent_results <- AnalyzeRespondentSensitivity(
   fit.lm = fit.lm, 
-  segroup = df$caseid, 
-  var_interest = "cand_female", 
-  target = "sign", 
-  dropped_resp_list = TRUE
+  segroup = df$caseid,           # survey respondent id 
+  var_interest = "cand_female",  # target AMCE
+  target = "sign",               # or "significance"
+  dropped_resp_list = TRUE       # if TRUE, function returns the set of respondent ids removed to reverse the target metric of the variable of interest. 
 )
 
 # View main results 
-respondent_results$RespondentSensitivity
-#>    param_name target model_coef   model_se    model_p n_respondent   total_infl
-#> 1 cand_female   sign 0.03875656 0.01932379 0.04707456         1146 -1.23122e-15
-#>     median_infl n_pos_infl n_neg_infl n_drop_auto n_drop   rerun_coef
-#> 1 -4.175677e-06        555        591          16     14 -0.001237848
-#>     rerun_se rerun_pval reruns
-#> 1 0.01630143  0.9395925      4
+t(respondent_results$RespondentSensitivity)
+#>              [,1]           
+#> param_name   "cand_female"  
+#> target       "sign"         
+#> model_coef   "0.03875656"   
+#> model_se     "0.01932379"   
+#> model_p      "0.04707456"   
+#> n_respondent "1146"         
+#> total_infl   "-1.23122e-15" 
+#> median_infl  "-4.175677e-06"
+#> n_pos_infl   "555"          
+#> n_neg_infl   "591"          
+#> n_drop_auto  "16"           
+#> n_drop       "14"           
+#> rerun_coef   "-0.001237848" 
+#> rerun_se     "0.01630143"   
+#> rerun_pval   "0.9395925"    
+#> reruns       "4"
 
 # View dropped respondents  
 respondent_results$DroppedRespondents
 #>  [1]  845 1133 1095 1157 1109  819  306   43  932  503  630  916  517  107
+
+print(paste0("Proportion of respondents removed to reverse the sign of cand_female:", respondent_results$RespondentSensitivity$n_drop/respondent_results$RespondentSensitivity$n_respondent*100))
+#> [1] "Proportion of respondents removed to reverse the sign of cand_female:1.2216404886562"
 ```
 
 #### Visualising the Respondent Influences CDF
 
 ``` r
-plot_cdf_respondent_influences(fit.lm = fit.lm, segroup = df$caseid, var_interest = "cand_female", ndrop = 14)
+# Respondents removed to reverse the sign of the AMCE of "cand_female" are drawn in red.
+# Median respondent is shown in green.
+plot_cdf_respondent_influences(fit.lm = fit.lm, 
+                               segroup = df$caseid, 
+                               var_interest = "cand_female", 
+                               target = "sign", 
+                               ndrop = 14)
 ```
 
 <img src="man/figures/README-plot-1.png" width="100%" />
@@ -113,20 +148,31 @@ contest_results <- AnalyzeContestSensitivity(
   formula = as.formula(win ~ cand_female + Age + Race + Job + Political), 
   data = as.data.frame(df), 
   respondent_id = "caseid", 
-  contest_no = "contest_no", 
+  contest_no = "contest_no",  
   var_interest = "cand_female", 
   target = "sign", 
   weights = "weight"
 )
 
 # View main results
-contest_results$ContestSensitivity
-#>    param_name target model_coef   model_se    model_p    total_infl n_contest
-#> 1 cand_female   sign 0.03875656 0.01932379 0.04707456 -1.248716e-15      2887
-#>     median_infl n_pos_infl n_neg_infl n_drop_auto n_drop   rerun_coef rerun_se
-#> 1 -1.698448e-06       1416       1471          23     22 -0.001444463 0.016424
-#>   rerun_pval reruns
-#> 1  0.9300392      3
+t(contest_results$ContestSensitivity)
+#>             [,1]           
+#> param_name  "cand_female"  
+#> target      "sign"         
+#> model_coef  "0.03875656"   
+#> model_se    "0.01932379"   
+#> model_p     "0.04707456"   
+#> total_infl  "-1.248716e-15"
+#> n_contest   "2887"         
+#> median_infl "-1.698448e-06"
+#> n_pos_infl  "1416"         
+#> n_neg_infl  "1471"         
+#> n_drop_auto "23"           
+#> n_drop      "22"           
+#> rerun_coef  "-0.001444463" 
+#> rerun_se    "0.016424"     
+#> rerun_pval  "0.9300392"    
+#> reruns      "3"
 
 # View dropped contests 
 contest_results$DroppedContests
@@ -136,6 +182,7 @@ contest_results$DroppedContests
 #> [19] "103-937"  "52-1001"  "134-812"  "57-954"
 
 # View the mapping from profile attributes to contest ids.
+# Note that contests are unordered pairs of profiles. 
 head(contest_results$ProfileKey)
 #>   profile_id                                           profile
 #> 1        584       0-65-Hispanic-Attorney-SchoolBoardPresident
