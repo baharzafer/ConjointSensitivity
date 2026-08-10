@@ -23,8 +23,8 @@ your conjoint experiment data, you can use our package to
 - visualize the influences of respondents (or contests) to detect
   outliers.
 
-Our package is built on `zaminfluence` introduced by (Broderick, T.,
-Giordano, R., & Meager, R., 2020) to calculate influence scores for
+Our package is built on `zaminfluence` introduced by Broderick, T.,
+Giordano, R., & Meager, R. (2020) to calculate influence scores for
 respondents and contests.
 
 We provide a simple example to demonstrate how to use
@@ -123,8 +123,8 @@ t(respondent_results$RespondentSensitivity)
 respondent_results$DroppedRespondents
 #>  [1]  845 1133 1095 1157 1109  819  306   43  932  503  630  916  517  107
 
-print(paste0("Proportion of respondents removed to reverse the sign of cand_female:", respondent_results$RespondentSensitivity$n_drop/respondent_results$RespondentSensitivity$n_respondent*100))
-#> [1] "Proportion of respondents removed to reverse the sign of cand_female:1.2216404886562"
+print(paste0(round(respondent_results$RespondentSensitivity$n_drop/respondent_results$RespondentSensitivity$n_respondent*100, 2), "% of respondents are removed to reverse the sign of cand_female."))
+#> [1] "1.22% of respondents are removed to reverse the sign of cand_female."
 ```
 
 #### Visualising the Respondent Influences CDF

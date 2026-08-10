@@ -28,7 +28,7 @@ For any given Average Marginal Component Effect (AMCE) estimated with your conjo
 
 *   visualize the influences of respondents (or contests) to detect outliers. 
 
-Our package is built on ```zaminfluence``` introduced by (Broderick, T., Giordano, R., & Meager, R., 2020) to calculate influence scores for respondents and contests. 
+Our package is built on ```zaminfluence``` introduced by Broderick, T., Giordano, R., & Meager, R. (2020) to calculate influence scores for respondents and contests. 
 
 We provide a simple example to demonstrate how to use ```ConjointSensitivity``` using the replication data for the non-partisan YouGov experiment in Kirkland and Coppock (2018).
 
@@ -97,7 +97,7 @@ t(respondent_results$RespondentSensitivity)
 # View dropped respondents  
 respondent_results$DroppedRespondents
 
-print(paste0("Proportion of respondents removed to reverse the sign of cand_female:", respondent_results$RespondentSensitivity$n_drop/respondent_results$RespondentSensitivity$n_respondent*100))
+print(paste0(round(respondent_results$RespondentSensitivity$n_drop/respondent_results$RespondentSensitivity$n_respondent*100, 2), "% of respondents are removed to reverse the sign of cand_female."))
 ```
 
 #### Visualising the Respondent Influences CDF
