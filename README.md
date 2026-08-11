@@ -69,7 +69,9 @@ Coppock (2018).
 library(ConjointSensitivity)
 library(dplyr, quietly = T, warn.conflicts = FALSE)
 library(torch)
+#> Warning: package 'torch' was built under R version 4.3.3
 library(purrr)
+#> Warning: package 'purrr' was built under R version 4.3.3
 
 # Load the conjoint dataset
 df <- read.csv("tests/testthat/testdata_KirklandCoppock_nonpartisan_yougov.csv")
@@ -136,7 +138,7 @@ plot_cdf_respondent_influences(fit.lm = fit.lm,
                                segroup = df$caseid, 
                                var_interest = "cand_female", 
                                target = "sign", 
-                               ndrop = 14)
+                               ndrop = respondent_results$RespondentSensitivity$n_drop)
 ```
 
 <img src="man/figures/README-plot-1.png" width="100%" />

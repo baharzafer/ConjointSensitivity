@@ -109,7 +109,7 @@ plot_cdf_respondent_influences(fit.lm = fit.lm,
                                segroup = df$caseid, 
                                var_interest = "cand_female", 
                                target = "sign", 
-                               ndrop = 14)
+                               ndrop = respondent_results$RespondentSensitivity$n_drop)
 ```
 
 ### 2.Contest Sensitivity 
