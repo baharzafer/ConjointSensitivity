@@ -18,122 +18,38 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-This package is developed to evaluate the robustness of conjoint analysis results to the removal of small fractions of respondents and experimentally generated unique contests.
-
-For any given Average Marginal Component Effect (AMCE) estimated with your conjoint experiment data, you can use our package to 
-
-*   detect the smallest proportion of respondents (or contests) that derives its sign or significance,
-
-*   retrieve the set of those respondents (or contests) to further investigate their characteristics,
-
-*   visualize the influences of respondents (or contests) to detect outliers. 
-
-Our package is built on ```zaminfluence``` introduced by Broderick, T., Giordano, R., & Meager, R. (2020) to calculate influence scores for respondents and contests. 
-
-We provide a simple example to demonstrate how to use ```ConjointSensitivity``` using the replication data for the non-partisan YouGov experiment in Kirkland and Coppock (2018).
-
-## References
-*   Broderick, T., Giordano, R., & Meager, R. (2020). _An Automatic Finite-Sample Robustness Metric: When Can Dropping a Little Data Make a Big Difference?_
-
-*   Kirkland, P. A., & Coppock, A. (2018). _Candidate choice without party labels: new insights from conjoint survey experiments_. Political Behavior, 40, 571–591.
-
-## Citation 
-If you use ```ConjointSensitivity``` in your research, please cite our paper:
-
-Abramson, S., & Zafer, B. (2026) _Do Voters Prefer Women and Young Candidates? Re-evaluating Evidence from Conjoint Experiments_
+The goal of ConjointSensitivity is to ...
 
 ## Installation
 
-You can install the development version of ConjointSensitivity:
-(Please let us know if you encounter any error.)
+You can install the development version of ConjointSensitivity from [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("zfrb/ConjointSensitivity")
-
+# install.packages("pak")
+pak::pak("zfrb/ConjointSensitivity")
 ```
 
-## Quickstart
+## Example
 
-This example demonstrates how to use ConjointSensitivity using the replication data for the non-partisan YouGov experiment in Kirkland and Coppock (2018).
+This is a basic example which shows you how to solve a common problem:
 
 ```{r example}
 library(ConjointSensitivity)
-library(dplyr, quietly = T, warn.conflicts = FALSE)
-library(torch)
-library(purrr)
-
-# Load the conjoint dataset
-df <- read.csv("tests/testthat/testdata_KirklandCoppock_nonpartisan_yougov.csv")
-df$cand_female = ifelse(df$Gender=="Female", 1, 0) # make sure the variable of interest is numeric
-## Conjoint data should be in the long-form. 
+## basic example code
 ```
 
-### 1. Respondent Sensitivity 
+What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
 
-```{r}
-# Fit the base linear model
-df$Age = as.character(df$Age)  # factor() is not allowed in formula when using AnalyzeRespondentSensitivity and AnalyzeContestSensitivity
-fit.lm <- lm(
-  as.formula(win ~ cand_female + Age + Race + Job + Political), 
-  data = df, 
-  weights = weight, 
-  x = TRUE, 
-  y = TRUE
-)
-
-# Run the respondent-level analysis
-respondent_results <- AnalyzeRespondentSensitivity(
-  fit.lm = fit.lm, 
-  segroup = df$caseid,           # survey respondent id 
-  var_interest = "cand_female",  # target AMCE
-  target = "sign",               # or "significance"
-  dropped_resp_list = TRUE       # if TRUE, function returns the set of respondent ids removed to reverse the target metric of the variable of interest. 
-)
-
-# View main results 
-t(respondent_results$RespondentSensitivity)
-
-# View dropped respondents  
-respondent_results$DroppedRespondents
-
-print(paste0(round(respondent_results$RespondentSensitivity$n_drop/respondent_results$RespondentSensitivity$n_respondent*100, 2), "% of respondents are removed to reverse the sign of the AMCE of cand_female."))
+```{r cars}
+summary(cars)
 ```
 
-#### Visualising the Respondent Influences CDF
+You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this.
 
-```{r plot}
-# Respondents removed to reverse the sign of the AMCE of "cand_female" are drawn in red.
-# Median respondent is shown in green.
-plot_cdf_respondent_influences(fit.lm = fit.lm, 
-                               segroup = df$caseid, 
-                               var_interest = "cand_female", 
-                               target = "sign", 
-                               ndrop = respondent_results$RespondentSensitivity$n_drop)
+You can also embed plots, for example:
+
+```{r pressure, echo = FALSE}
+plot(pressure)
 ```
 
-### 2.Contest Sensitivity 
-
-```{r}
-contest_results <- AnalyzeContestSensitivity(
-  formula = as.formula(win ~ cand_female + Age + Race + Job + Political), 
-  data = as.data.frame(df), 
-  respondent_id = "caseid", 
-  contest_no = "contest_no",  
-  var_interest = "cand_female", 
-  target = "sign", 
-  weights = "weight"
-)
-
-# View main results
-t(contest_results$ContestSensitivity)
-
-# View dropped contests 
-contest_results$DroppedContests
-
-# View the mapping from profile attributes to contest ids.
-# Note that contests are unordered pairs of profiles. 
-head(contest_results$ProfileKey)
-```
-
-
+In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
